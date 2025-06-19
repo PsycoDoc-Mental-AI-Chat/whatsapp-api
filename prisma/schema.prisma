@@ -10,15 +10,36 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id              Int      @id @default(autoincrement())
-  waId            String   @unique
-  messagesToday   Int      @default(0)
-  lastMessageDate DateTime @default(now())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id              Int       @id @default(autoincrement())
+  waId            String    @unique
+  messagesToday   Int       @default(0)
+  lastMessageDate DateTime  @default(now())
+  isPremium       Boolean   @default(false)
+  premiumUntil    DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model GeminiHistory {
+  id        Int      @id @default(autoincrement())
+  waId      String   @unique
+  history   Json
+  updatedAt DateTime @updatedAt
+}
+
+model Transaction {
+  id        Int       @id @default(autoincrement())
+  orderId   String    @unique
+  waId      String
+  duration  String // "7d" atau "30d"
+  price     Int
+  status    String // "pending", "settlement", "expire", dst
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
