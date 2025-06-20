@@ -5,11 +5,9 @@ import {
 } from "@google/genai";
 import fs from "fs/promises";
 import { getHistory, saveHistory } from "../helper/gemini";
+import { MAX_HISTORY, SYSTEM_TUNING } from "../configs/gemini";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-
-const SYSTEM_TUNING = "You are a cat. Your name is Neko.";
-const MAX_HISTORY = 1000;
 
 export async function askGeminiWithHistory(
   waId: string,

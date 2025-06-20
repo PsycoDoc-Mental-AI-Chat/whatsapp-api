@@ -21,6 +21,8 @@ model User {
   lastMessageDate DateTime  @default(now())
   isPremium       Boolean   @default(false)
   premiumUntil    DateTime?
+  lastActiveAt    DateTime  @default(now())
+  lastRemindedAt  DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 }

@@ -1,6 +1,7 @@
 import axios from "axios";
 import prisma from "../database/prisma";
 import { MIDTRANS_SERVER_KEY } from "../configs/payment";
+import { sendMessage } from "./whatsapp";
 const MIDTRANS_BASE_URL =
   process.env.MIDTRANS_BASE_URL || "https://api.sandbox.midtrans.com/v2/charge";
 
@@ -88,6 +89,60 @@ export async function createQrisPayment({
       qrisString: null,
       qrisUrl: null,
       order_id,
+    };
+  }
+}
+
+export async function simulatePayment({
+  waId,
+  orderId,
+}: {
+  waId: string;
+  orderId: string;
+}) {
+  const transactionStatus = "settlement"; // Simulate a successful payment
+
+  const [_, __, duration] = orderId.split("-");
+
+  let dura: string = "";
+  let premiumUntil = new Date();
+  if (duration === "7d") {
+    premiumUntil.setDate(premiumUntil.getDate() + 7);
+    dura = "selama 7 hari";
+  } else if (duration === "30d") {
+    premiumUntil.setDate(premiumUntil.getDate() + 30);
+    dura = "selama 30 hari";
+  }
+
+  try {
+    await prisma.user.upsert({
+      where: { waId },
+      update: { isPremium: true, premiumUntil },
+      create: { waId, isPremium: true, premiumUntil },
+    });
+
+    await prisma.transaction.update({
+      where: { orderId },
+      data: {
+        status: transactionStatus,
+        paidAt: new Date(),
+      },
+    });
+
+    console.log("SUKSES SIMULASI MIDTRANS:", orderId);
+    const message = `Pembayaran kamu diterima!, premium kamu sudah aktif ${dura} mulai sekarang yaa...`;
+
+    return {
+      success: true,
+      message,
+    };
+  } catch (err) {
+    console.error("ERROR SIMULASI MIDTRANS:", err);
+    const message = `Pembayaran kamu gagal!, coba lagi nanti yaa...`;
+
+    return {
+      success: false,
+      message,
     };
   }
 }

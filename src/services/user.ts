@@ -1,4 +1,7 @@
+import { DAYS_THRESHOLD } from "../configs/user";
 import prisma from "../database/prisma";
+import { subDays } from "date-fns";
+import { sendMessage } from "./whatsapp";
 
 export async function checkAndAddFreemium(
   waId: string
@@ -74,4 +77,42 @@ export async function setUserPremium(waId: string, days: number) {
       premiumUntil: until,
     },
   });
+}
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function sendReminders() {
+  const now = new Date();
+  const inactiveSince = subDays(now, DAYS_THRESHOLD);
+
+  const users = await prisma.user.findMany({
+    where: {
+      isPremium: true,
+      lastActiveAt: { lt: inactiveSince },
+      OR: [
+        { lastRemindedAt: null },
+        { lastRemindedAt: { lt: prisma.user.fields.lastActiveAt } }, // belum pernah diingatkan
+      ],
+    },
+  });
+
+  for (const user of users) {
+    const phone = user.waId.split("@")[0];
+
+    await sendMessage(
+      phone,
+      `Halo dari Dokter Psy! Sudah beberapa hari kamu belum bercerita. Jangan ragu untuk menghubungi Dokter Psy kapan saja jika butuh teman ngobrol atau saran ya 😊`
+    );
+
+    await prisma.user.update({
+      where: { waId: user.waId },
+      data: { lastRemindedAt: now },
+    });
+
+    console.log(`Reminder sent to ${user.waId} at ${now.toISOString()}`);
+    const delay = 1000 + Math.floor(Math.random() * 9000);
+    await sleep(delay);
+  }
 }

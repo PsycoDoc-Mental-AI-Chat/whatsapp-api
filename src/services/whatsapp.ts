@@ -17,7 +17,7 @@ import {
   askGeminiText,
   askGeminiWithHistory,
 } from "./gemini";
-import { createQrisPayment } from "./midtrans";
+import { createQrisPayment, simulatePayment } from "./midtrans";
 import { PRICELIST } from "../configs/payment";
 
 const logger = P({ level: "info" });
@@ -158,6 +158,33 @@ Ketik /upgrade 7d atau /upgrade 30d untuk pembayaran via QRIS!
                   { text: "Permintaan QRIS gagal, silahkan coba lagi nanti" },
                   wa_id
                 );
+              }
+
+              continue;
+            }
+
+            if (txt?.startsWith("/simulate-pay")) {
+              const order_id = txt.split(" ")[1];
+              if (!order_id) {
+                await sendMessageWTyping(
+                  sock,
+                  {
+                    text: "Tulis ID transaksi kamu, misal /simulate-pay PD-6281225389903-7d-39u5d5.",
+                  },
+                  wa_id
+                );
+                continue;
+              }
+
+              const { success, message } = await simulatePayment({
+                waId: wa_id,
+                orderId: order_id,
+              });
+
+              if (success) {
+                await sendMessageWTyping(sock, { text: message }, wa_id);
+              } else {
+                await sendMessageWTyping(sock, { text: message }, wa_id);
               }
 
               continue;
