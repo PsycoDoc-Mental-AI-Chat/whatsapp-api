@@ -152,6 +152,17 @@ Ketik /upgrade 7d atau /upgrade 30d untuk pembayaran via QRIS!
                     `Setelah pembayaran, premium akan otomatis aktif dalam beberapa menit.\n\n` +
                     `_Order ID: ${order_id}_`,
                 });
+
+                await sendMessageWTyping(
+                  sock,
+                  {
+                    text:
+                      "Karena Midtrans sandbox tester error maka, silahkan ketik `/simulate-pay " +
+                      order_id +
+                      "` untuk simulasi pembayaran.",
+                  },
+                  wa_id
+                );
               } else {
                 await sendMessageWTyping(
                   sock,
@@ -253,7 +264,7 @@ Ketik /upgrade 7d atau /upgrade 30d untuk pembayaran via QRIS!
             await sendMessageWTyping(
               sock,
               {
-                text: "Limit gratis harian sudah habis. Silakan upgrade untuk akses unlimited.",
+                text: "Limit gratis harian sudah habis. Silakan upgrade untuk akses unlimited. ketik `/upgrade` untuk info.",
               },
               wa_id
             );
@@ -264,7 +275,7 @@ Ketik /upgrade 7d atau /upgrade 30d untuk pembayaran via QRIS!
             await sendMessageWTyping(
               sock,
               {
-                text: "Fitur media (gambar, dokumen, dll) hanya tersedia untuk akun premium.",
+                text: "Fitur media (gambar, dokumen, dll) hanya tersedia untuk akun premium. ketik `/upgrade` untuk info.",
               },
               wa_id
             );
